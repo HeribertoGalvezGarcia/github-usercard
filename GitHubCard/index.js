@@ -3,6 +3,21 @@
            https://api.github.com/users/<your name>
 */
 
+const base = "https://api.github.com/users/HeribertoGalvezGarcia";
+
+function makeFromURL(url) {
+  axios.get(url)
+    .then(response => cards.appendChild(createComponent(response.data)));
+}
+
+makeFromURL(base);
+
+axios.get(`${base}/followers`)
+  .then(response => {
+    for (const user of response.data) makeFromURL(user.url)
+  });
+
+
 /* Step 2: Inspect and study the data coming back, this is YOUR 
    github info! You will need to understand the structure of this 
    data in order to use it to build your component function 
@@ -24,8 +39,6 @@
           user, and adding that card to the DOM.
 */
 
-const followersArray = [];
-
 /* Step 3: Create a function that accepts a single object as its only argument,
           Using DOM methods and properties, create a component that will return the following DOM element:
 
@@ -46,7 +59,37 @@ const followersArray = [];
 
 */
 
-/* List of LS Instructors Github username's: 
+function createNode(type, {classes = [], ...rest} = {}) {
+  const node = document.createElement(type);
+  node.classList.add(...classes);
+  for (const [attribute, value] of Object.entries(rest)) node[attribute] = value;
+  return node;
+}
+
+function createComponent({avatar_url, name, login, location, html_url, followers, following, bio}) {
+  const node = createNode("div", {classes: ["card"]});
+  node.appendChild(createNode("img", {src: avatar_url}));
+
+  const infoNode = createNode("div", {classes: ["card-info"]});
+  infoNode.appendChild(createNode("h3", {classes: ["name"], textContent: name || login}));
+  infoNode.appendChild(createNode("p", {classes: ["username"], textContent: login}));
+  infoNode.appendChild(createNode("p", {textContent: `Location: ${location || "None"}`}));
+
+  const profileNode = createNode("p", {textContent: 'Profile: '});
+  profileNode.append(createNode("a", {textContent: html_url, href: html_url}));
+  infoNode.appendChild(profileNode);
+
+  infoNode.appendChild(createNode("p", {textContent: `Followers: ${followers}`}));
+  infoNode.appendChild(createNode("p", {textContent: `Following: ${following}`}));
+  infoNode.appendChild(createNode("p", {textContent: `Bio: ${bio || "None"}`}));
+  node.appendChild(infoNode);
+
+  return node;
+}
+
+const cards = document.querySelector(".cards");
+
+/* List of LS Instructors Github username's:
   tetondan
   dustinmyers
   justsml
